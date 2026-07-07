@@ -1,75 +1,62 @@
-# React + TypeScript + Vite
+# SnapStack
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based document scanner, built mainly as a way to actually *learn*
+WebRTC and the MediaStream Image Capture API hands-on, rather than just read
+about them.
 
-Currently, two official plugins are available:
+## What this project is really about
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This started as an excuse to go deep on two browser APIs I kept hearing about
+but had never used for real: **WebRTC** (specifically the camera-access side
+of it, via `getUserMedia`) and the **MediaStream Image Capture API**
+(`ImageCapture`, `takePhoto()`).
 
-## React Compiler
+The "document scanner" idea — auto-detecting sharpness and capturing pages
+into a PDF — became the vehicle for learning those APIs properly, rather than
+the end goal in itself. Along the way it pulled in a few more concepts that
+ended up being just as valuable to understand:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `requestVideoFrameCallback` for syncing work to actual video frames instead
+  of blind polling with `setInterval`
+- Basic image processing math (grayscale conversion, Laplacian edge detection,
+  variance) to turn "is this photo blurry?" into something code can actually
+  measure
+- The mirroring convention in video-call apps, and *why* it doesn't apply to a
+  scanner (mirroring is for looking at yourself, not for reading a document
+  someone's holding up to the camera)
+- Client-side PDF generation with jsPDF, and the "load into an `<img>` before
+  you can use it" pattern that shows up a lot when working with `blob:` URLs
 
-## Expanding the ESLint configuration
+## Honest scope check
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This is **desktop only**, and realistically that limits how practical
+it is as an actual scanning tool — most people reaching for a document scanner
+want it on their phone, in their pocket, not tabbed into a laptop browser.
+So this project is less "a tool I'll use" and more "a proof of concept + a
+place I properly learned some browser APIs by building something real with
+them."
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Where this could go next
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+The camera-capture pipeline built here (permission handling, live video,
+frame-by-frame analysis, capturing stills) is genuinely reusable as a
+foundation for other browser-based computer vision projects — the "get pixels
+out of a live camera feed" part is the hard, shared groundwork regardless of
+what you do with those pixels afterward. Natural next steps from here in future projects:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Object detection** using ONNX Runtime — feeding captured frames into a
+  model instead of just measuring blur
+- **Image-to-text (OCR)** — since the hardest part of a scanner (getting a
+  clean, sharp still image) is already solved here
 
-```
+## Tech stack
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Vite + React + TypeScript
+- Tailwind CSS
+- jsPDF for client-side PDF generation
+- No backend — everything runs entirely in the browser
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Status
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+A working learning prototype, not a polished product. Built primarily to
+understand the APIs involved, not to ship.
